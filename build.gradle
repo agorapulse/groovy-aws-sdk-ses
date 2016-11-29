@@ -1,22 +1,17 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
-    }
+plugins {
+    id "com.jfrog.bintray" version "1.7.3"
 }
-
 
 apply plugin: "groovy"
 apply plugin: 'maven'
+
+version "1.0"
+group "agorapulse.libs"
+
 apply from: "$rootDir/gradle/publishing.gradle"
 apply from: "$rootDir/gradle/credentials.gradle"
 apply from: "$rootDir/gradle/bintray.gradle"
 apply from: "$rootDir/gradle/codenarc.gradle"
-
-version "1.0"
-group "com.agorapulse"
 
 ext {
     groovyVersion = '2.4.7'
