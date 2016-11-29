@@ -4,6 +4,12 @@ import static com.agorapulse.awssdk.ses.AwsSdkSesEmailDeliveryStatus.STATUS_DELI
 import static com.agorapulse.awssdk.ses.AwsSdkSesEmailDeliveryStatus.STATUS_BLACKLISTED
 import static com.agorapulse.awssdk.ses.AwsSdkSesEmailDeliveryStatus.STATUS_NOT_DELIVERED
 
+import com.agorapulse.awssdk.AwsSdkUtils
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.regions.Region
+import com.amazonaws.regions.RegionUtils
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailService
+
 import com.amazonaws.AmazonClientException
 import com.amazonaws.AmazonServiceException
 import com.amazonaws.AmazonWebServiceClient
@@ -32,6 +38,17 @@ import java.nio.ByteBuffer
 @CompileStatic
 class AwsSesMailer {
     AmazonWebServiceClient client
+
+    void initClient(String accessKey, String secretKey, String regionName) {
+        Region region = RegionUtils.getRegion(regionName)
+        if ( !region?.isServiceSupported(AmazonSimpleEmailService.ENDPOINT_PREFIX) ) {
+            log.error("${AmazonSimpleEmailService.ENDPOINT_PREFIX} is not supported in region $regionName")
+            return
+        }
+        def credentials = new BasicAWSCredentials(accessKey, secretKey)
+        def clientConfiguration = AwsSdkUtils.clientConfigurationWithMap([:])
+        client = new AmazonSimpleEmailServiceClient(credentials, clientConfiguration).withRegion(region)
+    }
 
     /**
      * @return 1 if successful, 0 if not sent, -1 if blacklisted
