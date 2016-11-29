@@ -1,6 +1,19 @@
-apply plugin: 'groovy'
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
+    }
+}
+
+
+apply plugin: "groovy"
 apply plugin: 'maven'
-apply plugin: 'codenarc'
+apply from: "$rootDir/gradle/publishing.gradle"
+apply from: "$rootDir/gradle/credentials.gradle"
+apply from: "$rootDir/gradle/bintray.gradle"
+apply from: "$rootDir/gradle/codenarc.gradle"
 
 version "1.0"
 group "com.agorapulse"
@@ -34,16 +47,8 @@ test {
     systemProperties System.properties
 }
 
-codenarc {
-    toolVersion = '0.25.2'
-}
-
-codenarcMain {
-    ignoreFailures false
-    configFile file("${rootProject.projectDir}/config/codenarc/codenarc.groovy")
-}
-
-codenarcTest {
-    ignoreFailures true
-    configFile file("${rootProject.projectDir}/config/codenarc/codenarcTest.groovy")
+task release {
+    description = 'Releases a version of the plugin on Bintray'
+    group = 'Publishing'
+    dependsOn bintrayUpload
 }
