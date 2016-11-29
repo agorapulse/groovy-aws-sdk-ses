@@ -658,17 +658,17 @@ class AwsSdkSesMimeType {
     String mediaTypeSubtype
 
     static boolean isMimeTypeSupported(String mimeType) {
-        !awsSESUnsupportedMimeTypes().any { it == mimeType}
+        !awsSESUnsupportedMimeTypes().any { it == mimeType }
     }
 
     static boolean isFileExtensionSupported(String filename) {
         def ext = fileExtension(filename)
-        !awsSESUnsupportedAttachmentTypes().any { it == ext}
+        !awsSESUnsupportedAttachmentTypes().any { it == ext }
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    static String filenameWithoutExtension(final String filename){
-        filename.lastIndexOf('.').with {it != -1 ? filename[0..<it] : filename}
+    static String filenameWithoutExtension(final String filename) {
+        filename.lastIndexOf('.').with { it == -1 ? filename : filename[ 0..<it ] }
     }
 
     static String fileExtension(final String filename) {
@@ -678,17 +678,22 @@ class AwsSdkSesMimeType {
 
     static String mimeTypeFromFilename(String filename) {
         String extension = fileExtension(filename)
-        allMimeTypes().find { it.suffixApplicable == extension}?.mediaTypeSubtype
+        allMimeTypes().find { it.suffixApplicable == extension }?.mediaTypeSubtype
     }
 
     static List<String> awsSESUnsupportedMimeTypes() {
-        allMimeTypes().findAll { m -> awsSESUnsupportedAttachmentTypes().any { it == m.suffixApplicable } }.collect { it.mediaTypeSubtype }
+        allMimeTypes().findAll { m ->
+            awsSESUnsupportedAttachmentTypes().any {
+                it == m.suffixApplicable
+            }
+        }*.mediaTypeSubtype as List<String>
     }
 
-
     /**
-     * @see <a href="http://docs.aws.amazon.com/ses/latest/DeveloperGuide/mime-types.html">AWS SES Unsupported Attachment Types</a>
+     * @see <a href="http://docs.aws.amazon.com/ses/latest/DeveloperGuide/mime-types.html">
+     *     AWS SES Unsupported Attachment Types</a>
      */
+    @SuppressWarnings('LineLength')
     static List<String> awsSESUnsupportedAttachmentTypes() {
         ['.ade',
          '.adp',
@@ -782,9 +787,8 @@ class AwsSdkSesMimeType {
          '.xnk']
     }
 
-
     @CompileStatic(TypeCheckingMode.SKIP)
     static List<AwsSdkSesMimeType> allMimeTypes() {
-        ALL.collect { new  AwsSdkSesMimeType(suffixApplicable: it[0], mediaTypeSubtype:it[1]) }
+        ALL.collect { new  AwsSdkSesMimeType(suffixApplicable: it[0], mediaTypeSubtype: it[1]) }
     }
 }

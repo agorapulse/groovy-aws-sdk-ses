@@ -2,6 +2,7 @@ package com.agorapulse.awssdk.ses
 
 import spock.lang.Specification
 
+@SuppressWarnings(['AbcMetric', 'JavaIoPackageAccess'])
 class AwsSesMailerSpec extends Specification {
 
     void "test transactionalEmailWithClosure"() {
@@ -32,13 +33,11 @@ class AwsSesMailerSpec extends Specification {
         transactionalEmail.attachments.first().mimeType == 'application/pdf'
         transactionalEmail.attachments.first().description == 'An example pdf'
 
-
         when:
         def f = new File('src/test/groovy/com/agorapulse/awssdk/ses/groovylogo.png')
 
         then:
         f.exists()
-
 
         when:
         transactionalEmail = AwsSesMailer.transactionalEmailWithClosure {
@@ -63,7 +62,5 @@ class AwsSesMailerSpec extends Specification {
         transactionalEmail.attachments.first().filepath == f.absolutePath
         transactionalEmail.attachments.first().mimeType == 'image/png'
         transactionalEmail.attachments.first().description == ''
-
-
     }
 }

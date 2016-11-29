@@ -9,26 +9,31 @@ class TransactionalEmailAttachment {
     String mimeType
     String description = ''
 
+    @SuppressWarnings('ConfusingMethodName')
     void filename(String str) {
         this.filename = str
     }
 
+    @SuppressWarnings('ConfusingMethodName')
     void filepath(String str) {
         this.filepath = str
     }
 
+    @SuppressWarnings('ConfusingMethodName')
     void mimeType(String str) {
         this.mimeType = str
     }
 
+    @SuppressWarnings('ConfusingMethodName')
     void description(String str) {
         this.description = str
     }
 
+    @SuppressWarnings('JavaIoPackageAccess')
     String getMimeType() {
-        if(!this.mimeType && this.filepath) {
+        if ( !this.mimeType && this.filepath ) {
             def f = new File(this.filepath)
-            if(f.exists()) {
+            if ( f.exists() ) {
                 this.mimeType = AwsSdkSesMimeType.mimeTypeFromFilename(f.name)
             }
         }
@@ -36,10 +41,11 @@ class TransactionalEmailAttachment {
         this.mimeType
     }
 
+    @SuppressWarnings('JavaIoPackageAccess')
     String getFilename() {
-        if(!this.filename && this.filepath) {
+        if ( !this.filename && this.filepath ) {
             def f = new File(this.filepath)
-            if(f.exists()) {
+            if ( f.exists() ) {
                 this.filename = f.name
             }
         }

@@ -1,5 +1,6 @@
 apply plugin: 'groovy'
 apply plugin: 'maven'
+apply plugin: 'codenarc'
 
 version "1.0"
 group "com.agorapulse"
@@ -27,4 +28,18 @@ dependencies {
     compile 'javax.mail:mail:1.4.4'
 
     testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
+}
+
+codenarc {
+    toolVersion = '0.25.2'
+}
+
+codenarcMain {
+    ignoreFailures false
+    configFile file("${rootProject.projectDir}/config/codenarc/codenarc.groovy")
+}
+
+codenarcTest {
+    ignoreFailures false
+    configFile file("${rootProject.projectDir}/config/codenarc/codenarcTest.groovy")
 }

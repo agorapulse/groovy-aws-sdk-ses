@@ -1,5 +1,9 @@
 package com.agorapulse.awssdk.ses
 
+import static com.agorapulse.awssdk.ses.AwsSdkSesEmailDeliveryStatus.STATUS_DELIVERED
+import static com.agorapulse.awssdk.ses.AwsSdkSesEmailDeliveryStatus.STATUS_BLACKLISTED
+import static com.agorapulse.awssdk.ses.AwsSdkSesEmailDeliveryStatus.STATUS_NOT_DELIVERED
+
 import com.amazonaws.AmazonClientException
 import com.amazonaws.AmazonServiceException
 import com.amazonaws.AmazonWebServiceClient
@@ -23,7 +27,6 @@ import javax.mail.internet.MimeMessage
 import javax.mail.internet.MimeMultipart
 import javax.mail.util.ByteArrayDataSource
 import java.nio.ByteBuffer
-import static com.agorapulse.awssdk.ses.AwsSdkSesEmailDeliveryStatus.*
 
 @Slf4j
 @CompileStatic
@@ -43,11 +46,13 @@ class AwsSesMailer {
                 transactionalEmail.replyToEmail)
     }
 
-    int mailWithAttachment(@DelegatesTo(TransactionalEmail) Closure composer) throws UnsupportedAttachmentTypeException {
+    int mailWithAttachment(@DelegatesTo(TransactionalEmail) Closure composer)
+            throws UnsupportedAttachmentTypeException {
         def transactionalEmail = transactionalEmailWithClosure(composer)
         sendEmailWithAttachment(transactionalEmail)
     }
 
+    @SuppressWarnings(['LineLength', 'ElseBlockBraces', 'JavaIoPackageAccess'])
     int sendEmailWithAttachment(TransactionalEmail transactionalEmail) throws UnsupportedAttachmentTypeException {
         int statusId = STATUS_NOT_DELIVERED
 
@@ -58,21 +63,22 @@ class AwsSesMailer {
         MimeMultipart mimeMultipart = new MimeMultipart()
 
         BodyPart p = new MimeBodyPart()
-        p.setContent(transactionalEmail.htmlBody, "text/html")
+        p.setContent(transactionalEmail.htmlBody, 'text/html')
         mimeMultipart.addBodyPart(p)
 
-        for(TransactionalEmailAttachment attachment : transactionalEmail.attachments) {
+        for ( TransactionalEmailAttachment attachment : transactionalEmail.attachments ) {
 
-            if(!AwsSdkSesMimeType.isMimeTypeSupported(attachment.mimeType)) {
+            if ( !AwsSdkSesMimeType.isMimeTypeSupported(attachment.mimeType) ) {
                 throw new UnsupportedAttachmentTypeException()
             }
 
             MimeBodyPart mimeBodyPart = new MimeBodyPart()
             mimeBodyPart.setFileName(attachment.filename)
-            mimeBodyPart.setDescription(attachment.description, "UTF-8")
-            DataSource ds = new ByteArrayDataSource(new FileInputStream(new File(attachment.filepath)), attachment.mimeType)
+            mimeBodyPart.setDescription(attachment.description, 'UTF-8')
+            DataSource ds = new ByteArrayDataSource(new FileInputStream(new File(attachment.filepath)),
+                    attachment.mimeType)
             mimeBodyPart.setDataHandler(new DataHandler(ds))
-            mimeMultipart.addBodyPart(mimeBodyPart);
+            mimeMultipart.addBodyPart(mimeBodyPart)
         }
         mimeMessage.content = mimeMultipart
 
@@ -86,19 +92,22 @@ class AwsSesMailer {
         rawEmailRequest.setSource(transactionalEmail.sourceEmail)
 
         try {
-            (client as AmazonSimpleEmailServiceClient).sendRawEmail(rawEmailRequest);
+            (client as AmazonSimpleEmailServiceClient).sendRawEmail(rawEmailRequest)
             statusId = STATUS_DELIVERED
 
         } catch (AmazonServiceException exception) {
-            if (exception.message.find("Address blacklisted")) {
+            if ( exception.message.find('Address blacklisted') ) {
 
                 log.debug "Address blacklisted destinationEmail=${transactionalEmail.recipients.toString()}"
                 statusId = STATUS_BLACKLISTED
-            } else if (exception.message.find("Missing final")) {
+
+            } else if ( exception.message.find('Missing final') ) {
                 log.warn "Invalid parameter value: destinationEmail=${transactionalEmail.recipients.toString()}, sourceEmail=${transactionalEmail.sourceEmail}, replyToEmail=${transactionalEmail.replyToEmail}, subject=${subject}"
+
             } else {
                 log.warn 'An amazon service exception was catched while sending email with attachment' + exception.message
             }
+
         } catch (AmazonClientException exception) {
             log.warn 'An amazon client exception was catched while sending email with attachment' + exception.message
 
@@ -115,13 +124,14 @@ class AwsSesMailer {
      * @param replyToEmail
      * @return 1 if successful, 0 if not sent, -1 if blacklisted
      */
+    @SuppressWarnings(['LineLength', 'ElseBlockBraces'])
     int send(String destinationEmail,
              String subject,
              String htmlBody,
              String sourceEmail = '',
              String replyToEmail = '') {
         int statusId = STATUS_NOT_DELIVERED
-        if (!destinationEmail) {
+        if ( !destinationEmail ) {
             return statusId
         }
 
@@ -131,20 +141,24 @@ class AwsSesMailer {
         Message message = new Message(messageSubject, messageBody)
         try {
             SendEmailRequest sendEmailRequest = new SendEmailRequest(sourceEmail, destination, message)
-            if (replyToEmail) {
+            if ( replyToEmail ) {
                 sendEmailRequest.replyToAddresses = [replyToEmail]
             }
             (client as AmazonSimpleEmailServiceClient).sendEmail(sendEmailRequest)
             statusId = STATUS_DELIVERED
         } catch (AmazonServiceException exception) {
-            if (exception.message.find("Address blacklisted")) {
+
+            if (exception.message.find('Address blacklisted')) {
                 log.debug "Address blacklisted destinationEmail=$destinationEmail"
                 statusId = STATUS_BLACKLISTED
-            } else if (exception.message.find("Missing final")) {
+
+            } else if (exception.message.find('Missing final')) {
                 log.warn "An amazon service exception was catched while sending email: destinationEmail=$destinationEmail, sourceEmail=$sourceEmail, replyToEmail=$replyToEmail, subject=$subject"
+
             } else {
                 log.warn 'An amazon service exception was catched while send +ng email' + exception.message
             }
+
         } catch (AmazonClientException exception) {
             log.warn 'An amazon client exception was catched while sending email' + exception.message
         }
