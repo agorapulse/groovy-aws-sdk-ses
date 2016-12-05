@@ -32,6 +32,7 @@ bintray {
         licenses = ['Apache-2.0']
         labels = ['aws','groovy']
         publicDownloadNumbers = true
+        publish = true
         version {
             repo = attr 'project_bintray_repo'
             name = project.version
